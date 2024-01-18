@@ -14,7 +14,8 @@ import (
 type Handler interface {
 	HandleText(ctx context.Context, text string)
 	HandleLLMStart(ctx context.Context, prompts []string)
-	HandleLLMEnd(ctx context.Context, output llms.LLMResult)
+	HandleLLMGenerateContentStart(ctx context.Context, ms []llms.MessageContent)
+	HandleLLMGenerateContentEnd(ctx context.Context, res *llms.ContentResponse)
 	HandleLLMError(ctx context.Context, err error)
 	HandleChainStart(ctx context.Context, inputs map[string]any)
 	HandleChainEnd(ctx context.Context, outputs map[string]any)
@@ -23,6 +24,7 @@ type Handler interface {
 	HandleToolEnd(ctx context.Context, output string)
 	HandleToolError(ctx context.Context, err error)
 	HandleAgentAction(ctx context.Context, action schema.AgentAction)
+	HandleAgentFinish(ctx context.Context, finish schema.AgentFinish)
 	HandleRetrieverStart(ctx context.Context, query string)
 	HandleRetrieverEnd(ctx context.Context, query string, documents []schema.Document)
 	HandleStreamingFunc(ctx context.Context, chunk []byte)

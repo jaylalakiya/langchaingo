@@ -26,9 +26,15 @@ func (l CombiningHandler) HandleLLMStart(ctx context.Context, prompts []string) 
 	}
 }
 
-func (l CombiningHandler) HandleLLMEnd(ctx context.Context, output llms.LLMResult) {
+func (l CombiningHandler) HandleLLMGenerateContentStart(ctx context.Context, ms []llms.MessageContent) {
 	for _, handle := range l.Callbacks {
-		handle.HandleLLMEnd(ctx, output)
+		handle.HandleLLMGenerateContentStart(ctx, ms)
+	}
+}
+
+func (l CombiningHandler) HandleLLMGenerateContentEnd(ctx context.Context, res *llms.ContentResponse) {
+	for _, handle := range l.Callbacks {
+		handle.HandleLLMGenerateContentEnd(ctx, res)
 	}
 }
 
@@ -59,6 +65,12 @@ func (l CombiningHandler) HandleToolEnd(ctx context.Context, output string) {
 func (l CombiningHandler) HandleAgentAction(ctx context.Context, action schema.AgentAction) {
 	for _, handle := range l.Callbacks {
 		handle.HandleAgentAction(ctx, action)
+	}
+}
+
+func (l CombiningHandler) HandleAgentFinish(ctx context.Context, finish schema.AgentFinish) {
+	for _, handle := range l.Callbacks {
+		handle.HandleAgentFinish(ctx, finish)
 	}
 }
 
