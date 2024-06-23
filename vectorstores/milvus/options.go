@@ -54,6 +54,7 @@ func WithTextField(str string) Option {
 }
 
 // WithMetaField sets te name of the meta field in the collection schema.
+// default is 'meta'.
 func WithMetaField(str string) Option {
 	return func(s *Store) {
 		s.metaField = str
@@ -120,6 +121,13 @@ func WithEF(ef int) Option {
 func WithSearchParameters(sp entity.SearchParam) Option {
 	return func(s *Store) {
 		s.searchParameters = sp
+	}
+}
+
+// WithMetricType sets the metric type for the collection.
+func WithMetricType(metricType entity.MetricType) Option {
+	return func(p *Store) {
+		p.metricType = metricType
 	}
 }
 

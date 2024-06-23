@@ -35,13 +35,10 @@ func TestRunInference(t *testing.T) {
 	t.Cleanup(server.Close)
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			client, err := New("token", "model")
+			client, err := New("token", "model", server.URL)
 			require.NoError(t, err)
-			// Override the URL to point to our mock server.
-			client.url = server.URL
 
 			resp, err := client.RunInference(context.TODO(), tc.req)
 			assert.Equal(t, tc.expected, resp)

@@ -5,41 +5,56 @@ package vertex
 
 import (
 	"context"
-	"log"
 
 	"cloud.google.com/go/vertexai/genai"
 	"github.com/tmc/langchaingo/callbacks"
 	"github.com/tmc/langchaingo/llms"
+	"github.com/tmc/langchaingo/llms/googleai"
+	"github.com/tmc/langchaingo/llms/googleai/internal/palmclient"
 )
 
 // Vertex is a type that represents a Vertex AI API client.
 //
-// TODO: This isn't in common code; may need PaLM client for embeddings, etc.
-// Note the deltas: type of topk, candidate count.
+// Right now, the Vertex Gemini SDK doesn't support embeddings; therefore,
+// for embeddings we also hold a palmclient.
 type Vertex struct {
 	CallbacksHandler callbacks.Handler
 	client           *genai.Client
-	opts             options
+	opts             googleai.Options
+	palmClient       *palmclient.PaLMClient
 }
 
 var _ llms.Model = &Vertex{}
 
-// NewVertex creates a new Vertex struct.
-func NewVertex(ctx context.Context, opts ...Option) (*Vertex, error) {
-	clientOptions := defaultOptions()
+// New creates a new Vertex client.
+func New(ctx context.Context, opts ...googleai.Option) (*Vertex, error) {
+	clientOptions := googleai.DefaultOptions()
 	for _, opt := range opts {
 		opt(&clientOptions)
 	}
 
-	v := &Vertex{
-		opts: clientOptions,
-	}
-
-	client, err := genai.NewClient(ctx, clientOptions.cloudProject, clientOptions.cloudLocation)
+	client, err := genai.NewClient(
+		ctx,
+		clientOptions.CloudProject,
+		clientOptions.CloudLocation,
+		clientOptions.ClientOptions...)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	v.client = client
+	palmClient, err := palmclient.New(
+		ctx,
+		clientOptions.CloudProject,
+		clientOptions.CloudLocation,
+		clientOptions.ClientOptions...)
+	if err != nil {
+		return nil, err
+	}
+
+	v := &Vertex{
+		opts:       clientOptions,
+		client:     client,
+		palmClient: palmClient,
+	}
 	return v, nil
 }

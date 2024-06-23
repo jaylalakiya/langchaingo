@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tmc/langchaingo/llms"
-	"github.com/tmc/langchaingo/schema"
 )
 
 func newTestClient(t *testing.T, opts ...Option) llms.Model {
@@ -30,12 +29,12 @@ func TestMultiContentText(t *testing.T) {
 	llm := newTestClient(t)
 
 	parts := []llms.ContentPart{
-		llms.TextContent{Text: "I'm a pomeranian"},
-		llms.TextContent{Text: "What kind of mammal am I?"},
+		llms.TextPart("I'm a pomeranian"),
+		llms.TextPart("What kind of mammal am I?"),
 	}
 	content := []llms.MessageContent{
 		{
-			Role:  schema.ChatMessageTypeHuman,
+			Role:  llms.ChatMessageTypeHuman,
 			Parts: parts,
 		},
 	}
@@ -54,16 +53,16 @@ func TestMultiContentTextChatSequence(t *testing.T) {
 
 	content := []llms.MessageContent{
 		{
-			Role:  schema.ChatMessageTypeHuman,
-			Parts: []llms.ContentPart{llms.TextContent{Text: "Name some countries"}},
+			Role:  llms.ChatMessageTypeHuman,
+			Parts: []llms.ContentPart{llms.TextPart("Name some countries")},
 		},
 		{
-			Role:  schema.ChatMessageTypeAI,
-			Parts: []llms.ContentPart{llms.TextContent{Text: "Spain and Lesotho"}},
+			Role:  llms.ChatMessageTypeAI,
+			Parts: []llms.ContentPart{llms.TextPart("Spain and Lesotho")},
 		},
 		{
-			Role:  schema.ChatMessageTypeHuman,
-			Parts: []llms.ContentPart{llms.TextContent{Text: "Which if these is larger?"}},
+			Role:  llms.ChatMessageTypeHuman,
+			Parts: []llms.ContentPart{llms.TextPart("Which if these is larger?")},
 		},
 	}
 
@@ -81,12 +80,12 @@ func TestMultiContentImage(t *testing.T) {
 	llm := newTestClient(t, WithModel("gpt-4-vision-preview"))
 
 	parts := []llms.ContentPart{
-		llms.ImageURLContent{URL: "https://github.com/tmc/langchaingo/blob/main/docs/static/img/parrot-icon.png?raw=true"},
-		llms.TextContent{Text: "describe this image in detail"},
+		llms.ImageURLPart("https://github.com/tmc/langchaingo/blob/main/docs/static/img/parrot-icon.png?raw=true"),
+		llms.TextPart("describe this image in detail"),
 	}
 	content := []llms.MessageContent{
 		{
-			Role:  schema.ChatMessageTypeHuman,
+			Role:  llms.ChatMessageTypeHuman,
 			Parts: parts,
 		},
 	}
@@ -104,19 +103,19 @@ func TestWithStreaming(t *testing.T) {
 	llm := newTestClient(t)
 
 	parts := []llms.ContentPart{
-		llms.TextContent{Text: "I'm a pomeranian"},
-		llms.TextContent{Text: "Tell me more about my taxonomy"},
+		llms.TextPart("I'm a pomeranian"),
+		llms.TextPart("Tell me more about my taxonomy"),
 	}
 	content := []llms.MessageContent{
 		{
-			Role:  schema.ChatMessageTypeHuman,
+			Role:  llms.ChatMessageTypeHuman,
 			Parts: parts,
 		},
 	}
 
 	var sb strings.Builder
 	rsp, err := llm.GenerateContent(context.Background(), content,
-		llms.WithStreamingFunc(func(ctx context.Context, chunk []byte) error {
+		llms.WithStreamingFunc(func(_ context.Context, chunk []byte) error {
 			sb.Write(chunk)
 			return nil
 		}))
@@ -135,11 +134,11 @@ func TestFunctionCall(t *testing.T) {
 	llm := newTestClient(t)
 
 	parts := []llms.ContentPart{
-		llms.TextContent{Text: "What is the weather like in Boston?"},
+		llms.TextPart("What is the weather like in Boston?"),
 	}
 	content := []llms.MessageContent{
 		{
-			Role:  schema.ChatMessageTypeHuman,
+			Role:  llms.ChatMessageTypeHuman,
 			Parts: parts,
 		},
 	}
@@ -158,7 +157,7 @@ func TestFunctionCall(t *testing.T) {
 
 	assert.NotEmpty(t, rsp.Choices)
 	c1 := rsp.Choices[0]
-	assert.Equal(t, "function_call", c1.StopReason)
+	assert.Equal(t, "tool_calls", c1.StopReason)
 	assert.NotNil(t, c1.FuncCall)
 }
 
